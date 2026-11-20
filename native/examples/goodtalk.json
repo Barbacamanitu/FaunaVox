@@ -1,0 +1,48 @@
+{
+  "name": "talk",
+  "body": {
+    "mass": 100.0,
+    "tract_length": 0.2,
+    "source": "larynx",
+    "fold_scale": 1.5,
+    "larynx_drop": 2.1,
+    "roughness": 0.1,
+    "breathiness": 0.1,
+    "nasality": 0.8,
+    "lung_capacity": 4.0,
+    "resonator_freq": 27,
+    "resonator_harmonic": 1.8,
+    "buzz": 1.5,
+    "chest": 1.0,
+    "chest_width": 27.0,
+    "noise_color": 0.0,
+    "tract_damping": 0.5,
+    "hf_loss": 1.0,
+    "low_cut": 0.0,
+    "formant_gain": 4.0,
+    "formant_width": 1.0,
+    "breath_pulse": 0.2,
+    "open_quotient": 0.5
+  },
+  "voice": {
+    "vowels": "o~o~o~iy~eh ~@~o~o~o~ @ @ iy~o~o~iy~ th~iy~ch o~o~o~iy~eh~@~o~o~o~",
+    "pitch": 4.1,
+    "pitch_range": 1.0,
+    "harshness": 0.5,
+    "vibrato": 0.1,
+    "tempo": 2.0,
+    "sustain": 0.941,
+    "melody": 15.0,
+    "falsetto": 1.2,
+    "repetition": 0.2,
+    "subharmonics": 1.0,
+    "chaos": 2.5,
+    "biphonation": 1.5,
+    "biphonation_ratio": 1.45,
+    "jumps": 1.0,
+    "calls": {
+        "idle":  { "sequence": true },
+        "speak": { "gap": 0.15 }
+        }
+  }
+}

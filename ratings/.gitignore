@@ -1,0 +1,4 @@
+# Renders: rebuilt from manifests and sweeps with cvsynth, so only the manifests and ratings are kept.
+batches/**/*.wav
+sweeps/
+sweeps_settings/

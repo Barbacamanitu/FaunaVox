@@ -1,0 +1,10 @@
+{
+  "name": "greeting",
+  "body": {"mass": 25, "roughness": 0.3},
+  "voice": {
+    "vowels": "a",
+    "calls": {
+      "speak": {"vowels": "h eh~ih | h iy th", "gap": 0.12}
+    }
+  }
+}

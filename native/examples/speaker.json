@@ -1,0 +1,12 @@
+{
+  "name": "speaker",
+  "body": {"mass": 30, "roughness": 0.2, "open_quotient": 0.55},
+  "voice": {
+    "vowels": ["a", "e", "i~a", "u", "|", "o", "o", "a~u"],
+    "pitch": 2,
+    "calls": {
+      "speak": {"repeats": [1, 2]},
+      "warn": {"sequence": true, "vowels": ["a", "a", "ɑ:~ʌ"], "dur": 0.35, "gap": 0.12, "repeats": [1, 1]}
+    }
+  }
+}

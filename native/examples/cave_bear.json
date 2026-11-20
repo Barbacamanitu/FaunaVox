@@ -1,0 +1,23 @@
+{
+  "name": "cave_bear",
+  "body": {
+    "mass": 350,
+    "head_length": 0.4,
+    "neck_length": 0.25,
+    "roughness": 0.55,
+    "breathiness": 0.2,
+    "larynx_drop": 0.3,
+    "chest": 1.2,
+    "chest_width": 120
+  },
+  "voice": {
+    "vowels": ["o", "a"],
+    "pitch": -3,
+    "harshness": 0.15,
+    "tempo": 0.85,
+    "calls": {
+      "warn": {"dur": 2.0, "harsh": 0.9, "repeats": [1, 1], "inhale": true},
+      "territorial": {"like": "warn", "dur": 3.0, "repeats": [2, 3], "gap": 0.6}
+    }
+  }
+}

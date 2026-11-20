@@ -1,0 +1,14 @@
+{
+  "name": "trill_bird",
+  "body": {"mass": 0.03, "source": "syrinx", "roughness": 0.05},
+  "voice": {
+    "vowels": ["i", "e"],
+    "pitch_range": 1.5,
+    "calls": {
+      "mating": {
+        "dur": 0.09, "repeats": [18, 18], "gap": 0.16, "inhale": false, "drift": -0.25,
+        "rhythm": [[0, 1.6], [0.65, 0.3], [1, 1.1]]
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+[package]
+name = "faunavox"
+version = "0.1.0"
+edition = "2021"
+authors = ["Russ Martelli <russmbiz@gmail.com>"]
+description = "FaunaVox: procedural creature vocalizations from a physical voice model, decoded from genomes"
+license = "MIT"
+readme = "../README.md"
+keywords = ["audio", "procedural", "synthesis", "creatures", "gamedev"]
+categories = ["multimedia::audio", "game-development"]
+publish = false
+
+[lib]
+name = "faunavox"
+# cdylib = faunavox.dll for Unity; rlib = used by the cvsynth executable.
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "cvsynth"
+path = "src/bin/cvsynth.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "unwind"  # the C ABI catches panics and reports them through cv_last_error

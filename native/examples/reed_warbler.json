@@ -1,0 +1,14 @@
+{
+  "name": "reed_warbler",
+  "body": {"mass": 0.012, "source": "syrinx", "roughness": 0.08},
+  "voice": {
+    "vowels": ["i", [0.7, 1.3, 1.1], "e"],
+    "pitch_range": 2.2,
+    "vibrato": 0.6,
+    "tempo": 1.4,
+    "repetition": 2,
+    "calls": {
+      "mating": {"dur": 0.5, "repeats": [3, 5], "gap": 0.12, "inhale": false}
+    }
+  }
+}

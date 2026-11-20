@@ -1,0 +1,21 @@
+{
+  "name": "gravelly_wolf",
+  "body": {
+    "mass": 40, "head_length": 0.25, "neck_length": 0.12,
+    "roughness": 0.6,
+    "breathiness": 0.0,
+    "nasality": 0.15
+  },
+  "voice": {
+    "vowels": ["u", "o"],
+    "pitch": 8, "pitch_range": 1.6, "vibrato": -0.3, "sustain": 3.0, "melody": 0.1,
+    "harshness": 0.25,
+    "falsetto": 0.3,
+    "calls": {
+      "idle":        {"dur": 0.6, "rumble": 0.3, "breath": -0.2},
+      "warn":        {"rumble": 0.4, "breath": -0.2, "harsh": 0.6},
+      "mating":      {"rumble": 0.3, "breath": -0.2, "harsh": 0.3},
+      "territorial": {"like": "mating", "rumble": 0.3, "breath": -0.2, "harsh": 0.3}
+    }
+  }
+}

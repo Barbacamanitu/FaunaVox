@@ -1,0 +1,21 @@
+{
+  "marsh_wolf": {
+    "body": {"mass": 40, "head_length": 0.25, "neck_length": 0.12, "roughness": 0.25, "breathiness": 0.1},
+    "voice": {"vowels": ["u", "o"], "pitch": 8, "pitch_range": 1.6, "vibrato": -0.3, "sustain": 3.0,
+              "melody": 0.1, "falsetto": 0.6}
+  },
+  "marsh_wolf_pup": {
+    "body": {"mass": 8, "head_length": 0.13, "neck_length": 0.06, "roughness": 0.15, "breathiness": 0.2},
+    "voice": {"vowels": ["u", "i"], "pitch": 10, "pitch_range": 1.8, "sustain": 1.5, "melody": 0.4,
+              "falsetto": 0.8}
+  },
+  "dune_hopper": {
+    "body": {"mass": 2, "roughness": 0.2, "nasality": 0.3},
+    "voice": {"vowels": ["i", "e"], "pitch": 4, "tempo": 1.3,
+              "calls": {"idle": {"repeats": [2, 4], "gap": 0.15, "dur": 0.15}}}
+  },
+  "rock_lizard": {
+    "body": {"mass": 6, "source": "hiss", "tract_length": 0.1, "breathiness": 0.9},
+    "voice": {"vowels": ["i", "@"]}
+  }
+}

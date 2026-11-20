@@ -1,0 +1,6 @@
+{
+  "name": "marsh_wolf",
+  "body": {"mass": 40, "head_length": 0.25, "neck_length": 0.12, "roughness": 0.25, "nasality": 0.15, "breathiness": 0.1},
+  "voice": {"vowels": ["u", "o"], "pitch": 8, "pitch_range": 1.6, "vibrato": -0.3, "sustain": 3.0, "melody": 0.1,
+            "falsetto": 0.6, "calls": {"idle": {"dur": 0.6}, "territorial": {"like": "mating"}}}
+}

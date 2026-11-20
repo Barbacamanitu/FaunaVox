@@ -1,0 +1,8 @@
+# Renders: every sound here is rebuilt by cvsynth or create_vocalization.py.
+*.wav
+vocalizations/
+out/
+native/auditions/
+
+# Python caches (including numba's).
+__pycache__/
