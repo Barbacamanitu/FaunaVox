@@ -39,6 +39,12 @@ report of what the decoder did.
 native\target\release\cvsynth.exe genome --genome native\examples\genomes\dusk_hound.json --out-dir out
 ```
 
+Or, from the `native` folder, build, render `dusk_hound` and play its mating call in one line:
+
+```powershell
+cargo run --release -- genome --genome .\examples\genomes\dusk_hound.json --out ./hounddog && .\hounddog\genome_mating.wav
+```
+
 Or render a hand-made creature, or a preset:
 
 ```powershell
