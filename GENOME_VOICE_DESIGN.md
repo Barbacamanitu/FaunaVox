@@ -16,8 +16,7 @@ Status, 2026-11-20:
 - **Not built yet:**
   - the Unity side: `GenomeVoiceDesigner` calling `cv_creature_from_genome`, the voice section's mutation settings,
     and starter voices made by `cvsynth genome design` (also not built). The DLL and C# binding are ready;
-  - the audio-fingerprint version of the mutation check;
-  - `prosody` in the Python mirror (`create_vocalization.py`).
+  - the audio-fingerprint version of the mutation check.
 
 Field v1 is inert: no region is confidently disliked yet ([§3](#3-preference-model)).
 

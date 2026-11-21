@@ -108,5 +108,6 @@ No code from these is included. They're credited because some of FaunaVox's valu
 
 ## Used, not included
 
-The Python reference engine (`create_vocalization.py`) imports numpy and scipy (BSD-3-Clause), numba (BSD-2-Clause)
-and, optionally, sounddevice (MIT). They're installed separately and not distributed with FaunaVox.
+The Python scripts import numpy (BSD-3-Clause); `lion_roar.py` also imports scipy (BSD-3-Clause) and, optionally,
+sounddevice (MIT), and `ratings/fit.py` imports scikit-learn (BSD-3-Clause). They're installed separately and not
+distributed with FaunaVox.

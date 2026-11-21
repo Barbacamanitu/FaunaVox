@@ -1,8 +1,7 @@
 # FaunaVox native engine (Rust)
 
-A native port of [`../create_vocalization.py`](../create_vocalization.py). It uses the same model,
-parameters, intents, presets and JSON format. The Python file stays the reference: read
-[`../README.md`](../README.md) for how the model works and how to tune a creature.
+The FaunaVox engine. Read [`../README.md`](../README.md) for how the model works and how to tune a
+creature.
 
 This one crate builds two things:
 
@@ -221,8 +220,7 @@ How it is said:
   NLP…), and the intent can have its own `"vowels"` phrase under `calls.speak`.
 - `"prosody"` gives each syllable, in order, `[length ×, pitch step (semitones), pitch slope across
   the syllable (semitones), level ×]`, e.g. `[[1, 0, 0, 1], [1.8, 3, -6, 0.8]]` for a plain syllable
-  then a long, higher, falling, softer one. Syllables past the list are plain. Native only: the
-  Python version doesn't read it yet.
+  then a long, higher, falling, softer one. Syllables past the list are plain.
 
 Any intent can be made sequential with `"sequence": true`. For example, a warn call that barks
 through its own phrase:
@@ -276,8 +274,7 @@ quick brown fox" becomes `th @ k uw~ih k b a~uh f aa k s`.
 The same translation is available in other places:
 - In the DLL as `cv_english_to_phrase`. The dictionary loads on the first call, in about 40 ms.
 - In Unity as `NativeCreatureVoice.EnglishToPhrase`.
-- In Python as `english_phrase.py`, or `create_vocalization.py --say`, which read the same data
-  files.
+- In Python as `english_phrase.py`, which reads the same data files.
 
 To update the dictionary, pull `third_party/cmudict` (a clone of the repository, git-ignored),
 copy its `cmudict.dict` into `data/` and rebuild.
@@ -285,7 +282,7 @@ copy its `cmudict.dict` into `data/` and rebuild.
 ### JSON additions
 
 - `body.head_length` and `body.neck_length`: when `tract_length` is not given, the tract length is
-  0.8 × head + 0.5 × neck (Python's `Body.from_dimensions`).
+  0.8 × head + 0.5 × neck.
 - Unknown fields are rejected, with a list of the valid names.
 
 ## Unity
@@ -326,23 +323,12 @@ The C API is in [`src/faunavox.h`](src/faunavox.h):
 
 Every entry point catches panics, so a bad input returns an error instead of crashing the editor.
 
-## Differences from the Python version
+## Determinism and speed
 
-- **Random stream:** this version uses its own seeded RNG (xoshiro256++), not numpy's. A given seed
-  is deterministic on every platform, but it gives a different take than the same seed in Python.
-  Across many seeds, the call plans are identical: the same call-count distributions and lengths.
-- **Dry clips:** with `reverb` 0, the 0.4 s of trailing silence that Python pads on is not added.
-- **Gravel bandpass:** the 20–50 Hz bandpass for `rumble` is a 2nd-order highpass and lowpass in
-  series, not scipy's bandpass design. The noise is renormalized afterwards, so this barely matters.
-- **Negative periods:** a chaotic period draw is clamped to at least one sample. Python could step
-  time backwards.
+The engine uses its own seeded RNG (xoshiro256++), so a given seed gives the same take on every
+platform.
 
-Checked against Python: all 14 presets × 8 intents, 4 seeds each, with no reverb. The median
-spectral centroid ratio is 1.003, and the median 1/3-octave spectrum difference is 0.9 dB. That is
-less than Python's own seed-to-seed spread of 1.1 dB.
-
-Speed: about 25 ms of CPU per second of audio on one core, roughly twice as fast as the
-numba-compiled Python. A 16 s wolf howl takes about 0.4 s.
+Speed: about 25 ms of CPU per second of audio on one core. A 16 s wolf howl takes about 0.4 s.
 
 ## Layout
 
@@ -351,7 +337,7 @@ src/model.rs      Body, Voice, intents, JSON (serde)
 src/synth.rs      sources, vocal tube, radiation, mix (the model)
 src/dsp.rs        Butterworth/notch/resonator biquads, interpolation, FFT convolution
 src/rng.rs        deterministic RNG
-src/presets.json  built-in presets (same as PRESETS in the Python)
+src/presets.json  built-in presets
 src/english.rs    English text -> speak phrase (CMU dictionary + letter-to-sound rules)
 src/space.rs      voice space: 10 perceptual axes relative to the body, mapped to synth settings
 src/genome.rs     genome decoder: 4-base windows -> base voice walk, syllable inventory, call patterns

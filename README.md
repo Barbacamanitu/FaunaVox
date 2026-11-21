@@ -149,15 +149,14 @@ The CLI writes the same track as JSON with `--mouth FPS`, beside each WAV.
 ## Without genomes
 
 A creature can also be written by hand: a body, a voice, and per-call overrides, as JSON or in code. The rest of
-this document describes that model. The Rust version reads the same JSON as the Python one.
+this document describes that model.
 
-```python
-from create_vocalization import Body, Voice, create_vocalization
-
-body = Body.from_dimensions(mass=40, head_length=0.25, neck_length=0.12, roughness=0.25)
-voice = Voice(vowels=["u", "o"], pitch=8, falsetto=0.6, sustain=3.0, melody=0.1)
-audio = create_vocalization(body, voice, intent="mating", seed=creature_id, reverb=0)
-# mono float32, 44.1 kHz, peak-normalized to 0.9
+```csharp
+using var voice = NativeCreatureVoice.FromJson(
+    "{\"body\": {\"mass\": 40, \"head_length\": 0.25, \"neck_length\": 0.12, \"roughness\": 0.25}, "
+  + "\"voice\": {\"vowels\": [\"u\", \"o\"], \"pitch\": 8, \"falsetto\": 0.6, \"sustain\": 3.0, \"melody\": 0.1}}");
+float[] samples = voice.Render("mating", seed: creatureId, reverb: 0f);
+// mono float32, 44.1 kHz, peak-normalized to 0.9
 ```
 
 | Input | What it is | Where the game gets it |
@@ -250,7 +249,7 @@ place) follow Klatt's synthesizer and the Klattara synthesizer's tables; see `na
 Other intents ignore the separators and consonants.
 
 English text can be turned into such a phrase with `english_phrase.py`, or with
-`create_vocalization.py --say "Hey, Heath!"`, which renders it as `speak`. Words come from the CMU
+`cvsynth --say "Hey, Heath!"`, which renders it as `speak`. Words come from the CMU
 Pronouncing Dictionary (`native/data/cmudict.dict`), and unknown words go through letter-to-sound
 rules (`native/data/english_rules.txt`). Sounds the synth can't make (nasals, l, r) are dropped.
 The native README describes the mapping.
@@ -476,14 +475,14 @@ The whole description serializes to JSON, so a creature type can live in a data 
 ```
 
 ```bash
-python create_vocalization.py --json creature.json --intent warn
+cvsynth --json creature.json --intent warn
 ```
 
 ---
 
 ## Making a new creature type sound right
 
-1. **Start from the closest preset** (`PRESETS` in the code): lion, tiger, wolf, cow, deer, pig,
+1. **Start from the closest preset** (`native/src/presets.json`, or `cvsynth --list-presets`): lion, tiger, wolf, cow, deer, pig,
    cat, mouse, songbird, crow, duck, frog, cricket, snake. Copy it and set the real `mass` and
    `tract_length`.
 2. **Get a few real recordings** of the animal, or of whatever it should resemble, and compare
@@ -493,7 +492,7 @@ python create_vocalization.py --json creature.json --intent warn
 4. **Render every intent:**
 
    ```bash
-   python create_vocalization.py --preset <name> --demo
+   cvsynth --preset <name> --demo
    ```
 
    Listen to the files in `vocalizations/`.
@@ -523,14 +522,10 @@ Lessons from tuning the existing presets:
 
 ## Integration notes
 
-- **Cost:** one intent renders in about 0.02–0.25 s of CPU (for 1–7 s of audio), and numba
-  compiles the tube filter on first use (cached afterwards). Pre-render each creature's set of intents when it spawns, or in
+- **Cost:** about 25 ms of CPU per second of audio on one core. Pre-render each creature's set of intents when it spawns, or in
   a background job, rather than synthesizing during gameplay.
 - **Loudness:** output is peak-normalized. Set volume in the game from mass and intent (big
   animals and `warn`/`territorial` louder, `idle`/`beg` softer) and from distance.
-- **Reverb:** pass `reverb=0` and let the game's audio mixer apply environment reverb.
+- **Reverb:** pass `reverb: 0` and let the game's audio mixer apply environment reverb.
   `distance` also darkens the sound (air absorption). Leave it at about 20 m and do distance in
   the engine, or set it from the listener.
-- **Requirements:** Python 3 with numpy, scipy and numba. `sounddevice` is optional (playback
-  only). The algorithm can be ported to C#: the tube and lip filters are simple per-sample loops,
-  and the rest is standard IIR filtering.
