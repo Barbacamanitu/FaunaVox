@@ -316,7 +316,7 @@ def make_handler(folder, samples, rater):
 
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("batch", help="a batch folder made by cvsynth sample (holds manifest.jsonl)")
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--rater", default="me", help="stored with each rating")

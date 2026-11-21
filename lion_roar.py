@@ -21,6 +21,7 @@ Usage:
 import argparse
 import wave
 from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
 from scipy.signal import butter, fftconvolve, iirnotch, lfilter, sosfilt
@@ -41,7 +42,7 @@ class Call:
     amp: list
     harsh: list          # 0 = clean modal voice, 1 = chaotic/subharmonic growl
     mouth: list          # 0 = closed/nasal, 1 = jaw fully open
-    larynx: list = None  # 0 = resting, 1 = fully lowered; defaults to following amp
+    larynx: Optional[list] = None  # 0 = resting, 1 = fully lowered; defaults to following amp
     voiced: float = 1.0  # 0 for unvoiced sounds such as inhales
     breath: float = 0.25
     fry: float = 0.6     # strength of the creaky, pitch-dropping tail

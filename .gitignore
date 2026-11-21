@@ -3,6 +3,7 @@
 vocalizations/
 out/
 native/auditions/
-
+ratings/
+.venv/
 # Python caches (including numba's).
 __pycache__/

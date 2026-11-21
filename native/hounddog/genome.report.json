@@ -1,0 +1,255 @@
+{
+  "decoder_version": 2,
+  "space_version": 1,
+  "field_version": 1,
+  "bases": 1600,
+  "steps": 2645,
+  "deflected": 0,
+  "max_badness": 0.0,
+  "base": {
+    "body_resonance": 0.877,
+    "breathy": -0.589,
+    "brightness": -0.641,
+    "instability": -0.608,
+    "nasality": -0.25,
+    "pitch_height": -0.39,
+    "pitch_liveliness": -1.124,
+    "resonance_scale": -1.758,
+    "ringiness": -0.157,
+    "roughness": 0.145
+  },
+  "base_badness": 0.0,
+  "inventory": [
+    "jih",
+    "er",
+    "to"
+  ],
+  "speak": "jih | er to er to",
+  "calls": {
+    "alarm": {
+      "axes": {
+        "body_resonance": 0.831,
+        "breathy": 0.039,
+        "brightness": -0.529,
+        "instability": -0.453,
+        "nasality": -0.705,
+        "pitch_height": -0.663,
+        "pitch_liveliness": -0.856,
+        "resonance_scale": -1.903,
+        "ringiness": 0.616,
+        "roughness": 0.437
+      },
+      "offset": {
+        "body_resonance": -0.046,
+        "breathy": 0.629,
+        "brightness": 0.113,
+        "instability": 0.155,
+        "nasality": -0.455,
+        "pitch_height": -0.273,
+        "pitch_liveliness": 0.268,
+        "resonance_scale": -0.145,
+        "ringiness": 0.774,
+        "roughness": 0.291
+      },
+      "badness": 0.0,
+      "phrase": "jih | jih",
+      "picks": [
+        0,
+        0
+      ]
+    },
+    "beg": {
+      "axes": {
+        "body_resonance": 1.124,
+        "breathy": -0.585,
+        "brightness": -0.881,
+        "instability": -1.01,
+        "nasality": -0.082,
+        "pitch_height": -0.259,
+        "pitch_liveliness": -1.13,
+        "resonance_scale": -1.871,
+        "ringiness": -0.468,
+        "roughness": 0.535
+      },
+      "offset": {
+        "body_resonance": 0.247,
+        "breathy": 0.004,
+        "brightness": -0.24,
+        "instability": -0.402,
+        "nasality": 0.169,
+        "pitch_height": 0.131,
+        "pitch_liveliness": -0.006,
+        "resonance_scale": -0.113,
+        "ringiness": -0.311,
+        "roughness": 0.39
+      },
+      "badness": 0.0,
+      "phrase": "er to",
+      "picks": [
+        1,
+        2
+      ]
+    },
+    "flee": {
+      "axes": {
+        "body_resonance": 1.1,
+        "breathy": -0.856,
+        "brightness": -1.157,
+        "instability": -0.395,
+        "nasality": -0.44,
+        "pitch_height": -0.209,
+        "pitch_liveliness": -0.864,
+        "resonance_scale": -1.463,
+        "ringiness": -0.632,
+        "roughness": 0.474
+      },
+      "offset": {
+        "body_resonance": 0.223,
+        "breathy": -0.266,
+        "brightness": -0.515,
+        "instability": 0.213,
+        "nasality": -0.19,
+        "pitch_height": 0.181,
+        "pitch_liveliness": 0.26,
+        "resonance_scale": 0.295,
+        "ringiness": -0.474,
+        "roughness": 0.328
+      },
+      "badness": 0.0,
+      "phrase": "to to",
+      "picks": [
+        2,
+        2
+      ]
+    },
+    "idle": {
+      "axes": {
+        "body_resonance": 0.996,
+        "breathy": -0.891,
+        "brightness": -0.685,
+        "instability": -0.422,
+        "nasality": -0.862,
+        "pitch_height": 0.056,
+        "pitch_liveliness": -1.437,
+        "resonance_scale": -1.982,
+        "ringiness": -0.445,
+        "roughness": -0.303
+      },
+      "offset": {
+        "body_resonance": 0.12,
+        "breathy": -0.302,
+        "brightness": -0.043,
+        "instability": 0.186,
+        "nasality": -0.611,
+        "pitch_height": 0.446,
+        "pitch_liveliness": -0.313,
+        "resonance_scale": -0.224,
+        "ringiness": -0.288,
+        "roughness": -0.448
+      },
+      "badness": 0.0,
+      "phrase": "er jih",
+      "picks": [
+        1,
+        0
+      ]
+    },
+    "mating": {
+      "axes": {
+        "body_resonance": 0.934,
+        "breathy": -0.769,
+        "brightness": -0.894,
+        "instability": -0.508,
+        "nasality": -0.346,
+        "pitch_height": -0.063,
+        "pitch_liveliness": -0.837,
+        "resonance_scale": -1.345,
+        "ringiness": -0.073,
+        "roughness": -0.47
+      },
+      "offset": {
+        "body_resonance": 0.058,
+        "breathy": -0.18,
+        "brightness": -0.253,
+        "instability": 0.1,
+        "nasality": -0.096,
+        "pitch_height": 0.327,
+        "pitch_liveliness": 0.287,
+        "resonance_scale": 0.413,
+        "ringiness": 0.084,
+        "roughness": -0.616
+      },
+      "badness": 0.0,
+      "phrase": "jih jih to",
+      "picks": [
+        0,
+        0,
+        2
+      ]
+    },
+    "pain": {
+      "axes": {
+        "body_resonance": 0.753,
+        "breathy": -1.372,
+        "brightness": -0.068,
+        "instability": -0.279,
+        "nasality": -0.249,
+        "pitch_height": -0.287,
+        "pitch_liveliness": -1.287,
+        "resonance_scale": -1.472,
+        "ringiness": -0.023,
+        "roughness": 0.089
+      },
+      "offset": {
+        "body_resonance": -0.124,
+        "breathy": -0.783,
+        "brightness": 0.573,
+        "instability": 0.33,
+        "nasality": 0.001,
+        "pitch_height": 0.103,
+        "pitch_liveliness": -0.163,
+        "resonance_scale": 0.286,
+        "ringiness": 0.134,
+        "roughness": -0.056
+      },
+      "badness": 0.0,
+      "phrase": "er",
+      "picks": [
+        1
+      ]
+    },
+    "warn": {
+      "axes": {
+        "body_resonance": 0.641,
+        "breathy": -0.697,
+        "brightness": -0.934,
+        "instability": -0.466,
+        "nasality": 0.394,
+        "pitch_height": -0.262,
+        "pitch_liveliness": -1.016,
+        "resonance_scale": -1.619,
+        "ringiness": 0.133,
+        "roughness": -0.22
+      },
+      "offset": {
+        "body_resonance": -0.235,
+        "breathy": -0.108,
+        "brightness": -0.292,
+        "instability": 0.142,
+        "nasality": 0.644,
+        "pitch_height": 0.128,
+        "pitch_liveliness": 0.108,
+        "resonance_scale": 0.139,
+        "ringiness": 0.291,
+        "roughness": -0.365
+      },
+      "badness": 0.0,
+      "phrase": "jih jih to",
+      "picks": [
+        0,
+        0,
+        2
+      ]
+    }
+  }
+}
