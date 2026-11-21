@@ -231,8 +231,8 @@ fn load_creatures(a: &Args) -> Result<Vec<(String, Creature)>, String> {
 }
 
 /// NAME.mouth.json beside NAME.wav: the mouth movement for that sound.
-pub(crate) fn write_mouth(wav: &Path, body: &faunavox::Body, voice: &faunavox::Voice, intent: &str, seed: u64, fps: f64) -> Result<(), String> {
-    let t = faunavox::mouth_track(body, voice, intent, seed, fps)?;
+pub(crate) fn write_mouth(wav: &Path, body: &faunavox::Body, voice: &faunavox::Voice, intent: &str, seed: u64, fps: f64, samples: usize) -> Result<(), String> {
+    let t = faunavox::mouth_track(body, voice, intent, seed, fps, Some(samples))?;
     let path = wav.with_extension("mouth.json");
     std::fs::write(&path, t.to_json()).map_err(|e| format!("{}: {e}", path.display()))
 }
@@ -339,7 +339,7 @@ fn run() -> Result<(), String> {
                 let result = create_vocalization(&c.body, &c.voice, &job.intent, job.seed, a.distance, a.reverb)
                     .and_then(|audio| write_wav(&job.path, &audio, a.format).map(|_| audio.len()).map_err(|e| format!("{}: {e}", job.path.display())))
                     .and_then(|len| match a.mouth {
-                        Some(fps) => write_mouth(&job.path, &c.body, &c.voice, &job.intent, job.seed, fps).map(|_| len),
+                        Some(fps) => write_mouth(&job.path, &c.body, &c.voice, &job.intent, job.seed, fps, len).map(|_| len),
                         None => Ok(len),
                     });
                 let _lock = print.lock();

@@ -37,7 +37,7 @@ public static class CreatureVoiceNativeApi
 
     [DllImport(Dll)] public static extern IntPtr cv_render(IntPtr creature, [MarshalAs(UnmanagedType.LPUTF8Str)] string intent, ulong seed, float distance, float reverb);
     [DllImport(Dll)] public static extern IntPtr cv_mouth_channels();
-    [DllImport(Dll)] public static extern IntPtr cv_mouth_track(IntPtr creature, [MarshalAs(UnmanagedType.LPUTF8Str)] string intent, ulong seed, float fps);
+    [DllImport(Dll)] public static extern IntPtr cv_mouth_track(IntPtr creature, [MarshalAs(UnmanagedType.LPUTF8Str)] string intent, ulong seed, float fps, int audioSamples);
     [DllImport(Dll)] public static extern int cv_buffer_len(IntPtr buffer);
     [DllImport(Dll)] public static extern IntPtr cv_buffer_data(IntPtr buffer);
     [DllImport(Dll)] public static extern int cv_buffer_copy(IntPtr buffer, float[] dst, int capacity);
@@ -142,11 +142,17 @@ public sealed class NativeCreatureVoice : IDisposable
     public Task<float[]> RenderAsync(string intent, ulong seed, float distance = 20f, float reverb = 0f) =>
         Task.Run(() => Render(intent, seed, distance, reverb));
 
-    /// <summary>The mouth movement for Render(intent, seed): one MouthFrame per 1/fps seconds of the
-    /// audio. Cheap (no audio is made) and thread-safe. Sample it with MouthTrack.At(audioSource.time).</summary>
-    public MouthTrack Mouth(string intent, ulong seed, float fps = 60f)
+    /// <summary>The mouth movement for Render(intent, seed), the same length as its samples: one
+    /// MouthFrame per 1/fps seconds. Cheap (no audio is made) and thread-safe. Sample it with
+    /// MouthTrack.At(audioSource.time).</summary>
+    public MouthTrack Mouth(string intent, ulong seed, float[] samples, float fps = 60f) =>
+        Mouth(intent, seed, fps, samples.Length);
+
+    /// <summary>The mouth movement for Render(intent, seed). audioSamples: the audio's length, to pad
+    /// or trim the track to; 0 ends it 0.15 s after the last sound, without needing the audio.</summary>
+    public MouthTrack Mouth(string intent, ulong seed, float fps = 60f, int audioSamples = 0)
     {
-        IntPtr buf = CreatureVoiceNativeApi.cv_mouth_track(Handle, intent, seed, fps);
+        IntPtr buf = CreatureVoiceNativeApi.cv_mouth_track(Handle, intent, seed, fps, audioSamples);
         if (buf == IntPtr.Zero) throw new InvalidOperationException(CreatureVoiceNativeApi.LastError());
         try
         {
@@ -158,7 +164,8 @@ public sealed class NativeCreatureVoice : IDisposable
                 int k = i * MouthFrame.Channels;
                 frames[i] = new MouthFrame(raw[k], raw[k + 1], raw[k + 2], raw[k + 3], raw[k + 4]);
             }
-            return new MouthTrack(fps, frames);
+            float duration = audioSamples > 0 ? (float)audioSamples / SampleRate : frames.Length / fps;
+            return new MouthTrack(fps, duration, frames);
         }
         finally { CreatureVoiceNativeApi.cv_buffer_free(buf); }
     }
@@ -213,11 +220,11 @@ public readonly struct MouthFrame
 public sealed class MouthTrack
 {
     public readonly float Fps;
+    /// <summary>Seconds: the audio's length when it was given.</summary>
+    public readonly float Duration;
     public readonly MouthFrame[] Frames;
 
-    public MouthTrack(float fps, MouthFrame[] frames) { Fps = fps; Frames = frames; }
-
-    public float Duration => Frames.Length / Fps;
+    public MouthTrack(float fps, float duration, MouthFrame[] frames) { Fps = fps; Duration = duration; Frames = frames; }
 
     /// <summary>The mouth at `seconds` into the audio, interpolated; at rest (all 0) outside it.</summary>
     public MouthFrame At(float seconds)

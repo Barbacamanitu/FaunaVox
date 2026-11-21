@@ -217,7 +217,7 @@ pub fn genome(args: &[String]) -> Result<(), String> {
             let path = dir.join(format!("{name}_{intent}.wav"));
             write_wav(&path, &audio, Format::Pcm16).map_err(|e| format!("{}: {e}", path.display()))?;
             if let Some(fps) = a.mouth {
-                write_mouth(&path, &c.body, &c.voice, &intent, a.seed, fps)?;
+                write_mouth(&path, &c.body, &c.voice, &intent, a.seed, fps, audio.len())?;
             }
         }
     }

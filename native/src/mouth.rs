@@ -3,6 +3,9 @@
 //! The track is read from the same calls the audio is rendered from (same body, voice, intent and
 //! seed), so it lines up with `create_vocalization`'s audio sample for sample: frame `i` is at
 //! `i / fps` seconds into the audio. It needs no rendering, so it costs well under a millisecond.
+//! Given the audio's length in samples, the track is padded with rest frames or trimmed to exactly
+//! that length: ringing and reverb can carry the audio past the last call, and a dry render can
+//! end before the track's own closing tail.
 //!
 //! Channels, each 0..1:
 //! - `jaw`: jaw or beak opening. Follows the call's mouth curve, how open the vowel is (its F1),
@@ -19,7 +22,7 @@
 use crate::dsp::{curve, interp};
 use crate::model::{Body, Consonant, Voice};
 use crate::rng::Rng;
-use crate::synth::{build_calls, Call, INTENT_NAMES};
+use crate::synth::{build_calls, Call, INTENT_NAMES, SR};
 
 pub const CHANNELS: [&str; 5] = ["jaw", "round", "close", "snarl", "loud"];
 
@@ -36,6 +39,9 @@ const TAIL: f64 = 0.15;
 #[derive(Clone, Debug)]
 pub struct MouthTrack {
     pub fps: f64,
+    /// Length in seconds: the audio's when it was given, else the calls' plus a closing tail.
+    /// There are `ceil(duration * fps)` frames.
+    pub duration: f64,
     /// One `[jaw, round, close, snarl, loud]` per frame.
     pub frames: Vec<[f32; 5]>,
 }
@@ -122,7 +128,8 @@ fn gaussian_smooth(x: &[f64], sigma: f64) -> Vec<f64> {
 }
 
 /// The mouth track for the calls a vocalization is rendered from.
-pub fn track_from_calls(calls: &[Call], fps: f64) -> MouthTrack {
+/// `duration`: the audio's length in seconds, to pad or trim to (None: 0.15 s past the last call).
+pub fn track_from_calls(calls: &[Call], fps: f64, duration: Option<f64>) -> MouthTrack {
     let end = calls.iter().map(|c| c.start + c.dur).fold(0.0, f64::max);
     let n = ((end + TAIL) * RATE).ceil() as usize + 1;
     let mut acc = vec![[0.0f64; 4]; n];
@@ -185,16 +192,21 @@ pub fn track_from_calls(calls: &[Call], fps: f64) -> MouthTrack {
         loud.iter_mut().for_each(|v| *v /= peak);
     }
 
-    let frames = ((end + TAIL) * fps).ceil() as usize + 1;
+    let duration = duration.unwrap_or(end + TAIL).max(0.0);
+    let frames = (duration * fps - 1e-9).ceil().max(0.0) as usize;
     let at = |x: &[f64], t: f64| {
         let p = t * RATE;
-        let i = (p.floor() as usize).min(n - 1);
+        if p > (n - 1) as f64 {
+            return 0.0; // past the calls (a reverb tail): at rest
+        }
+        let i = p.floor() as usize;
         let j = (i + 1).min(n - 1);
         let f = p - i as f64;
         x[i] * (1.0 - f) + x[j] * f
     };
     MouthTrack {
         fps,
+        duration,
         frames: (0..frames)
             .map(|f| {
                 let t = f as f64 / fps;
@@ -206,8 +218,9 @@ pub fn track_from_calls(calls: &[Call], fps: f64) -> MouthTrack {
 }
 
 /// The mouth track for `create_vocalization(body, voice, intent, seed, ..)`, at `fps` frames a
-/// second. Distance and reverb don't move anything in time, so they aren't needed.
-pub fn mouth_track(body: &Body, voice: &Voice, intent: &str, seed: u64, fps: f64) -> Result<MouthTrack, String> {
+/// second. Pass the audio's length in samples to pad or trim the track to it exactly; without it,
+/// the track ends 0.15 s after the last call. Distance and reverb don't move anything in time.
+pub fn mouth_track(body: &Body, voice: &Voice, intent: &str, seed: u64, fps: f64, audio_samples: Option<usize>) -> Result<MouthTrack, String> {
     if !INTENT_NAMES.contains(&intent) {
         return Err(format!("unknown intent {intent:?}; choose from {INTENT_NAMES:?}"));
     }
@@ -218,7 +231,7 @@ pub fn mouth_track(body: &Body, voice: &Voice, intent: &str, seed: u64, fps: f64
     voice.validate()?;
     let mut rng = Rng::new(seed);
     let calls = build_calls(body, voice, intent, &mut rng)?;
-    Ok(track_from_calls(&calls, fps))
+    Ok(track_from_calls(&calls, fps, audio_samples.map(|n| n as f64 / SR as f64)))
 }
 
 impl MouthTrack {
@@ -229,8 +242,9 @@ impl MouthTrack {
             .map(|f| format!("[{}]", f.iter().map(|v| format!("{:.3}", v)).collect::<Vec<_>>().join(",")))
             .collect();
         format!(
-            "{{\"fps\": {}, \"channels\": [{}], \"frames\": [\n{}\n]}}\n",
+            "{{\"fps\": {}, \"duration\": {:.6}, \"channels\": [{}], \"frames\": [\n{}\n]}}\n",
             self.fps,
+            self.duration,
             CHANNELS.iter().map(|c| format!("\"{c}\"")).collect::<Vec<_>>().join(", "),
             frames.join(",\n")
         )
@@ -251,7 +265,7 @@ mod tests {
 
     fn track(phrase: &str) -> MouthTrack {
         let (b, v) = speak(phrase);
-        mouth_track(&b, &v, "speak", 3, 100.0).unwrap()
+        mouth_track(&b, &v, "speak", 3, 100.0, None).unwrap()
     }
 
     #[test]
@@ -279,12 +293,19 @@ mod tests {
     }
 
     #[test]
-    fn covers_the_audio() {
+    fn matches_the_audio_length() {
         let (b, v) = speak("a i u");
-        let audio = crate::synth::create_vocalization(&b, &v, "speak", 3, 10.0, 0.0).unwrap();
-        let t = mouth_track(&b, &v, "speak", 3, 60.0).unwrap();
-        let secs = audio.len() as f64 / crate::synth::SR as f64;
-        let track_secs = t.frames.len() as f64 / t.fps;
-        assert!((track_secs - secs).abs() < 0.4, "track {track_secs} s vs audio {secs} s");
+        let natural = mouth_track(&b, &v, "speak", 3, 60.0, None).unwrap();
+        for reverb in [0.0, 1.0] {
+            let audio = crate::synth::create_vocalization(&b, &v, "speak", 3, 10.0, reverb).unwrap();
+            let t = mouth_track(&b, &v, "speak", 3, 60.0, Some(audio.len())).unwrap();
+            let secs = audio.len() as f64 / SR as f64;
+            assert_eq!(t.duration, secs);
+            assert_eq!(t.frames.len(), (secs * 60.0).ceil() as usize);
+            // frames both tracks have are the same; padding is at rest
+            let k = t.frames.len().min(natural.frames.len());
+            assert_eq!(t.frames[..k], natural.frames[..k]);
+            assert!(t.frames[k..].iter().all(|f| f.iter().all(|&x| x == 0.0)));
+        }
     }
 }

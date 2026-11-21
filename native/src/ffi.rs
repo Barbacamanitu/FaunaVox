@@ -244,12 +244,13 @@ pub extern "C" fn cv_mouth_channels() -> *const c_char {
 
 /// The mouth movement for `cv_render(c, intent, seed, ..)`: `fps` frames a second, each holding
 /// one value per channel (see cv_mouth_channels), interleaved. Frame i is at i / fps seconds into
-/// the audio. NULL on error.
+/// the audio. `audio_samples`: the length of that audio (cv_buffer_len), to pad or trim the track
+/// to exactly; 0 for the track's own length (0.15 s past the last call). NULL on error.
 #[no_mangle]
-pub unsafe extern "C" fn cv_mouth_track(c: *const CvCreature, intent: *const c_char, seed: u64, fps: f32) -> *mut CvBuffer {
+pub unsafe extern "C" fn cv_mouth_track(c: *const CvCreature, intent: *const c_char, seed: u64, fps: f32, audio_samples: i32) -> *mut CvBuffer {
     guard(ptr::null_mut(), || {
         let c = c.as_ref().ok_or("creature is null")?;
-        let t = crate::mouth::mouth_track(&c.0.body, &c.0.voice, str_arg(intent, "intent")?, seed, fps as f64)?;
+        let t = crate::mouth::mouth_track(&c.0.body, &c.0.voice, str_arg(intent, "intent")?, seed, fps as f64, (audio_samples > 0).then_some(audio_samples as usize))?;
         Ok(Box::into_raw(Box::new(CvBuffer(t.frames.iter().flatten().copied().collect()))))
     })
 }

@@ -321,7 +321,7 @@ The C API is in [`src/faunavox.h`](src/faunavox.h):
 | `cv_creature_set` / `cv_creature_set_json` | Set a field by name |
 | `cv_render` | Render one call. Returns a buffer handle. |
 | `cv_buffer_len` / `_data` / `_copy` / `_free` | Read and free a rendered buffer or mouth track |
-| `cv_mouth_track` / `cv_mouth_channels` | The mouth movement for a `cv_render` call (same creature, intent and seed): interleaved frames of jaw, round, close, snarl and loud, 0..1 (see the main README) |
+| `cv_mouth_track` / `cv_mouth_channels` | The mouth movement for a `cv_render` call (same creature, intent and seed), padded or trimmed to its length: interleaved frames of jaw, round, close, snarl and loud, 0..1 (see the main README) |
 | `cv_last_error` | Why the last call failed, per thread |
 
 Every entry point catches panics, so a bad input returns an error instead of crashing the editor.

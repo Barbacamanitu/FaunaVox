@@ -36,9 +36,11 @@ int32_t     cv_decoder_version(void);
 CvBuffer*    cv_render(const CvCreature* c, const char* intent, uint64_t seed, float distance, float reverb);
 /* Mouth movement matching cv_render's audio for the same creature, intent and seed: fps frames
    a second, each frame cv_mouth_channels() values in 0..1 (jaw, round, close, snarl, loud),
-   interleaved. Frame i is at i / fps s. Read it with the cv_buffer functions. Cheap (no audio). */
+   interleaved. Frame i is at i / fps s. Read it with the cv_buffer functions. Cheap (no audio).
+   audio_samples: the audio's length (cv_buffer_len of the render) to pad or trim the track to,
+   giving ceil(audio_samples / sample_rate * fps) frames; 0 for its own length. */
 const char*  cv_mouth_channels(void);
-CvBuffer*    cv_mouth_track(const CvCreature* c, const char* intent, uint64_t seed, float fps);
+CvBuffer*    cv_mouth_track(const CvCreature* c, const char* intent, uint64_t seed, float fps, int32_t audio_samples);
 int32_t      cv_buffer_len(const CvBuffer* b);
 const float* cv_buffer_data(const CvBuffer* b);
 int32_t      cv_buffer_copy(const CvBuffer* b, float* dst, int32_t capacity);

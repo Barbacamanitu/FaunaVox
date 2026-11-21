@@ -112,9 +112,9 @@ length. See [`GENOME_VOICE_DESIGN.md`](GENOME_VOICE_DESIGN.md) §6 for the measu
 
 ### Mouth animation
 
-`voice.Mouth(intent, seed)` gives the mouth movement for `Render(intent, seed)`, lined up with the audio. It's
-read from the same syllables and consonants the sound is made from, without rendering anything, so it costs
-well under a millisecond. Each frame holds five values from 0 to 1:
+`voice.Mouth(intent, seed, samples)` gives the mouth movement for `Render(intent, seed)`, lined up with the audio
+and the same length as `samples`. It's read from the same syllables and consonants the sound is made from,
+without rendering anything, so it costs well under a millisecond. Each frame holds five values from 0 to 1:
 
 | Channel | Mouth | Driven by |
 |---|---|---|
@@ -125,7 +125,8 @@ well under a millisecond. Each frame holds five values from 0 to 1:
 | `Loud` | loudness, 1 at the call's loudest | throat, chest or ear motion |
 
 ```csharp
-MouthTrack mouth = voice.Mouth("mating", seed);   // 60 frames a second by default
+float[] samples = await voice.RenderAsync("mating", seed);
+MouthTrack mouth = voice.Mouth("mating", seed, samples);   // 60 frames a second by default
 source.clip = clip; source.Play();
 
 void LateUpdate()
@@ -140,8 +141,9 @@ void LateUpdate()
 
 A jaw hinge alone works from `Jaw`. The other channels need lip controls: a pucker, lips that meet over an open
 jaw (otherwise p and b show as a jaw that barely closes), and an upper lip that lifts. A beak ignores them. The
-mouth starts moving a little before each sound and settles a little after, as real mouths do. The CLI writes the
-same track as JSON with `--mouth FPS`, beside each WAV.
+mouth starts moving a little before each sound and settles a little after, as real mouths do. Frames past the
+last sound, such as a reverb tail, are at rest. Without `samples`, the track ends 0.15 s after the last sound.
+The CLI writes the same track as JSON with `--mouth FPS`, beside each WAV.
 
 ## Without genomes
 
