@@ -4,6 +4,8 @@
 creature's body sets its size and sound source, its genome sets its voice and its calls, and the game's AI picks
 what it's saying: an idle contact call, a warning growl, an alarm, a mating song.
 
+[![FaunaVox demo video](https://img.youtube.com/vi/30TrMccKRaU/maxresdefault.jpg)](https://youtu.be/30TrMccKRaU)
+
 - **Physical model:** larynx, syrinx, pulse and hiss sources through a lossy vocal tube, with formants, vowels,
   consonants (fricatives and stops), nonlinear phenomena (subharmonics, chaos, biphonation, register breaks), lip
   radiation and an outdoor mix.
@@ -20,7 +22,6 @@ what it's saying: an idle contact call, a warning growl, an alarm, a mating song
 | [`native/`](native/README.md) | The Rust engine, DLL, C API, Unity binding and `cvsynth`. This is the main implementation. |
 | [`GENOME_VOICE_DESIGN.md`](GENOME_VOICE_DESIGN.md) | How genomes decode into voices, the voice space, the preference model, and evolvability measurements. |
 | [`ratings/`](ratings/README.md) | The rating page and the preference-model fit. |
-| `create_vocalization.py` | The original Python engine. The Rust version is ported from it and has more features: it decodes genomes and reads per-syllable `prosody`; Python does neither. |
 | `english_phrase.py` | English text to a phrase of vowels and consonants, for the `speak` intent. |
 | `lion_roar.py` | The first single-purpose prototype, kept for reference. |
 
