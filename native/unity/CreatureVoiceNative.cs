@@ -36,6 +36,8 @@ public static class CreatureVoiceNativeApi
     [DllImport(Dll)] public static extern int cv_decoder_version();
 
     [DllImport(Dll)] public static extern IntPtr cv_render(IntPtr creature, [MarshalAs(UnmanagedType.LPUTF8Str)] string intent, ulong seed, float distance, float reverb);
+    [DllImport(Dll)] public static extern IntPtr cv_mouth_channels();
+    [DllImport(Dll)] public static extern IntPtr cv_mouth_track(IntPtr creature, [MarshalAs(UnmanagedType.LPUTF8Str)] string intent, ulong seed, float fps);
     [DllImport(Dll)] public static extern int cv_buffer_len(IntPtr buffer);
     [DllImport(Dll)] public static extern IntPtr cv_buffer_data(IntPtr buffer);
     [DllImport(Dll)] public static extern int cv_buffer_copy(IntPtr buffer, float[] dst, int capacity);
@@ -140,6 +142,27 @@ public sealed class NativeCreatureVoice : IDisposable
     public Task<float[]> RenderAsync(string intent, ulong seed, float distance = 20f, float reverb = 0f) =>
         Task.Run(() => Render(intent, seed, distance, reverb));
 
+    /// <summary>The mouth movement for Render(intent, seed): one MouthFrame per 1/fps seconds of the
+    /// audio. Cheap (no audio is made) and thread-safe. Sample it with MouthTrack.At(audioSource.time).</summary>
+    public MouthTrack Mouth(string intent, ulong seed, float fps = 60f)
+    {
+        IntPtr buf = CreatureVoiceNativeApi.cv_mouth_track(Handle, intent, seed, fps);
+        if (buf == IntPtr.Zero) throw new InvalidOperationException(CreatureVoiceNativeApi.LastError());
+        try
+        {
+            var raw = new float[CreatureVoiceNativeApi.cv_buffer_len(buf)];
+            CreatureVoiceNativeApi.cv_buffer_copy(buf, raw, raw.Length);
+            var frames = new MouthFrame[raw.Length / MouthFrame.Channels];
+            for (int i = 0; i < frames.Length; i++)
+            {
+                int k = i * MouthFrame.Channels;
+                frames[i] = new MouthFrame(raw[k], raw[k + 1], raw[k + 2], raw[k + 3], raw[k + 4]);
+            }
+            return new MouthTrack(fps, frames);
+        }
+        finally { CreatureVoiceNativeApi.cv_buffer_free(buf); }
+    }
+
     /// <summary>Wrap samples in an AudioClip (main thread only).</summary>
     public static AudioClip ToClip(string name, float[] samples)
     {
@@ -158,5 +181,51 @@ public sealed class NativeCreatureVoice : IDisposable
     ~NativeCreatureVoice()
     {
         if (handle != IntPtr.Zero) CreatureVoiceNativeApi.cv_creature_free(handle);
+    }
+}
+
+/// <summary>One moment of mouth movement, each value 0..1.</summary>
+public readonly struct MouthFrame
+{
+    public const int Channels = 5;
+    /// <summary>Jaw or beak opening.</summary>
+    public readonly float Jaw;
+    /// <summary>Lips pushed forward into a small round opening (u, o, sh).</summary>
+    public readonly float Round;
+    /// <summary>Lips pressed together, jaw possibly part open (p, b); 0.6 for lower lip to teeth (f).</summary>
+    public readonly float Close;
+    /// <summary>Upper lip lifted off the teeth (snarl), a little for s and th.</summary>
+    public readonly float Snarl;
+    /// <summary>Loudness, 1 at the loudest moment of the call.</summary>
+    public readonly float Loud;
+
+    public MouthFrame(float jaw, float round, float close, float snarl, float loud)
+    {
+        Jaw = jaw; Round = round; Close = close; Snarl = snarl; Loud = loud;
+    }
+
+    public static MouthFrame Lerp(MouthFrame a, MouthFrame b, float t) => new MouthFrame(
+        a.Jaw + (b.Jaw - a.Jaw) * t, a.Round + (b.Round - a.Round) * t, a.Close + (b.Close - a.Close) * t,
+        a.Snarl + (b.Snarl - a.Snarl) * t, a.Loud + (b.Loud - a.Loud) * t);
+}
+
+/// <summary>Mouth movement lined up with a rendered vocalization.</summary>
+public sealed class MouthTrack
+{
+    public readonly float Fps;
+    public readonly MouthFrame[] Frames;
+
+    public MouthTrack(float fps, MouthFrame[] frames) { Fps = fps; Frames = frames; }
+
+    public float Duration => Frames.Length / Fps;
+
+    /// <summary>The mouth at `seconds` into the audio, interpolated; at rest (all 0) outside it.</summary>
+    public MouthFrame At(float seconds)
+    {
+        if (Frames.Length == 0 || seconds < 0f) return default;
+        float p = seconds * Fps;
+        int i = (int)p;
+        if (i >= Frames.Length - 1) return i >= Frames.Length ? default : Frames[i];
+        return MouthFrame.Lerp(Frames[i], Frames[i + 1], p - i);
     }
 }

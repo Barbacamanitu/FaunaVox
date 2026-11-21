@@ -43,6 +43,8 @@ RENDERING:
     --variants N         render N takes per intent with seeds SEED..SEED+N-1 (default: 1)
     --distance M         listener distance in metres: air absorption + reverb mix (default: 20)
     --reverb X           built-in outdoor reverb amount, 0 = dry (default: 1)
+    --mouth FPS          also write each sound's mouth movement, FPS frames a second, to
+                         NAME.mouth.json beside its WAV (channels: jaw round close snarl loud)
 
 OUTPUT:
     --out FILE           output file when rendering a single sound (default: vocalization.wav)
@@ -94,6 +96,7 @@ struct Args {
     threads: usize,
     list_presets: bool,
     print_json: bool,
+    mouth: Option<f64>,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -102,7 +105,7 @@ fn parse_args() -> Result<Args, String> {
         intents: vec!["idle".into()], seed: 1, variants: 1, distance: 20.0, reverb: 1.0,
         out: None, out_dir: None, format: Format::Pcm16,
         threads: std::thread::available_parallelism().map(|n| n.get()).unwrap_or(4),
-        list_presets: false, print_json: false,
+        list_presets: false, print_json: false, mouth: None,
     };
     let mut it = std::env::args().skip(1);
     while let Some(arg) = it.next() {
@@ -160,6 +163,7 @@ fn parse_args() -> Result<Args, String> {
             "--threads" => a.threads = val("--threads")?.parse().map_err(|_| "--threads must be a positive integer")?,
             "--list-presets" => a.list_presets = true,
             "--print-json" => a.print_json = true,
+            "--mouth" => a.mouth = Some(num(val("--mouth")?, "--mouth")?),
             other => return Err(format!("unknown argument {other} (see --help)")),
         }
     }
@@ -224,6 +228,13 @@ fn load_creatures(a: &Args) -> Result<Vec<(String, Creature)>, String> {
         }
     }
     Ok(list)
+}
+
+/// NAME.mouth.json beside NAME.wav: the mouth movement for that sound.
+pub(crate) fn write_mouth(wav: &Path, body: &faunavox::Body, voice: &faunavox::Voice, intent: &str, seed: u64, fps: f64) -> Result<(), String> {
+    let t = faunavox::mouth_track(body, voice, intent, seed, fps)?;
+    let path = wav.with_extension("mouth.json");
+    std::fs::write(&path, t.to_json()).map_err(|e| format!("{}: {e}", path.display()))
 }
 
 pub(crate) fn write_wav(path: &Path, audio: &[f32], format: Format) -> io::Result<()> {
@@ -326,7 +337,11 @@ fn run() -> Result<(), String> {
                 let (name, c) = &creatures[job.creature];
                 let t0 = Instant::now();
                 let result = create_vocalization(&c.body, &c.voice, &job.intent, job.seed, a.distance, a.reverb)
-                    .and_then(|audio| write_wav(&job.path, &audio, a.format).map(|_| audio.len()).map_err(|e| format!("{}: {e}", job.path.display())));
+                    .and_then(|audio| write_wav(&job.path, &audio, a.format).map(|_| audio.len()).map_err(|e| format!("{}: {e}", job.path.display())))
+                    .and_then(|len| match a.mouth {
+                        Some(fps) => write_mouth(&job.path, &c.body, &c.voice, &job.intent, job.seed, fps).map(|_| len),
+                        None => Ok(len),
+                    });
                 let _lock = print.lock();
                 match result {
                     Ok(len) => {

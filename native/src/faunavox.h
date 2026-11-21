@@ -34,6 +34,11 @@ int32_t     cv_decoder_version(void);
 /* Mono float samples at cv_sample_rate(), peak-normalized to 0.9. NULL on error.
    CPU work: call from a worker thread, never the audio thread. */
 CvBuffer*    cv_render(const CvCreature* c, const char* intent, uint64_t seed, float distance, float reverb);
+/* Mouth movement matching cv_render's audio for the same creature, intent and seed: fps frames
+   a second, each frame cv_mouth_channels() values in 0..1 (jaw, round, close, snarl, loud),
+   interleaved. Frame i is at i / fps s. Read it with the cv_buffer functions. Cheap (no audio). */
+const char*  cv_mouth_channels(void);
+CvBuffer*    cv_mouth_track(const CvCreature* c, const char* intent, uint64_t seed, float fps);
 int32_t      cv_buffer_len(const CvBuffer* b);
 const float* cv_buffer_data(const CvBuffer* b);
 int32_t      cv_buffer_copy(const CvBuffer* b, float* dst, int32_t capacity);

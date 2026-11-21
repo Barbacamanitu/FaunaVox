@@ -235,6 +235,25 @@ pub unsafe extern "C" fn cv_render(c: *const CvCreature, intent: *const c_char, 
     })
 }
 
+/// Comma-separated mouth track channel names, in the order each frame holds them.
+#[no_mangle]
+pub extern "C" fn cv_mouth_channels() -> *const c_char {
+    static V: std::sync::OnceLock<CString> = std::sync::OnceLock::new();
+    static_cstr(&V, || crate::mouth::CHANNELS.join(","))
+}
+
+/// The mouth movement for `cv_render(c, intent, seed, ..)`: `fps` frames a second, each holding
+/// one value per channel (see cv_mouth_channels), interleaved. Frame i is at i / fps seconds into
+/// the audio. NULL on error.
+#[no_mangle]
+pub unsafe extern "C" fn cv_mouth_track(c: *const CvCreature, intent: *const c_char, seed: u64, fps: f32) -> *mut CvBuffer {
+    guard(ptr::null_mut(), || {
+        let c = c.as_ref().ok_or("creature is null")?;
+        let t = crate::mouth::mouth_track(&c.0.body, &c.0.voice, str_arg(intent, "intent")?, seed, fps as f64)?;
+        Ok(Box::into_raw(Box::new(CvBuffer(t.frames.iter().flatten().copied().collect()))))
+    })
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn cv_buffer_len(b: *const CvBuffer) -> i32 {
     b.as_ref().map_or(0, |b| b.0.len() as i32)

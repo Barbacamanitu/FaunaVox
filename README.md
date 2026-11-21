@@ -110,6 +110,39 @@ parent. About 0.1–0.2 of those rates gives gradual drift. Insertions, deletion
 after them, so a voice section is best mutated with point changes, inversions and reversals only, at a fixed
 length. See [`GENOME_VOICE_DESIGN.md`](GENOME_VOICE_DESIGN.md) §6 for the measurements.
 
+### Mouth animation
+
+`voice.Mouth(intent, seed)` gives the mouth movement for `Render(intent, seed)`, lined up with the audio. It's
+read from the same syllables and consonants the sound is made from, without rendering anything, so it costs
+well under a millisecond. Each frame holds five values from 0 to 1:
+
+| Channel | Mouth | Driven by |
+|---|---|---|
+| `Jaw` | jaw or beak opening | the call's mouth curve, how open the vowel is (a wide, i and u narrow), loudness |
+| `Round` | lips pushed forward into a small round opening | rounded vowels (u, o), sh |
+| `Close` | lips pressed together while the jaw may stay part open; 0.6 is lower lip to upper teeth | p and b closures; f |
+| `Snarl` | upper lip lifted off the teeth, corners pulled back | the voice's `spread`, a little for s and th |
+| `Loud` | loudness, 1 at the call's loudest | throat, chest or ear motion |
+
+```csharp
+MouthTrack mouth = voice.Mouth("mating", seed);   // 60 frames a second by default
+source.clip = clip; source.Play();
+
+void LateUpdate()
+{
+    MouthFrame m = mouth.At(source.time);          // at rest (all 0) before and after
+    jaw.localRotation = Quaternion.Euler(m.Jaw * maxJawDegrees, 0, 0);
+    face.SetBlendShapeWeight(roundShape, 100 * m.Round);
+    face.SetBlendShapeWeight(lipsCloseShape, 100 * m.Close);
+    face.SetBlendShapeWeight(snarlShape, 100 * m.Snarl);
+}
+```
+
+A jaw hinge alone works from `Jaw`. The other channels need lip controls: a pucker, lips that meet over an open
+jaw (otherwise p and b show as a jaw that barely closes), and an upper lip that lifts. A beak ignores them. The
+mouth starts moving a little before each sound and settles a little after, as real mouths do. The CLI writes the
+same track as JSON with `--mouth FPS`, beside each WAV.
+
 ## Without genomes
 
 A creature can also be written by hand: a body, a voice, and per-call overrides, as JSON or in code. The rest of

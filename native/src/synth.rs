@@ -234,6 +234,8 @@ pub struct Call {
     pub formants_to: Option<([f64; 3], [f64; 3], f64)>,
     /// The voicing heard through a voiced stop's closure: rendered as a call, then lowpassed.
     pub voice_bar: bool,
+    /// A stop's burst: how long the tract was closed before it (s). Only the mouth track uses it.
+    pub closure: f64,
 }
 
 impl Call {
@@ -244,6 +246,7 @@ impl Call {
             falsetto: 0.0, spread: 0.0, vibrato_rate: 5.5, rumble: 0.0,
             subharmonics: 0.0, chaos: 0.0, biphonation: 0.0, biphonation_ratio: 1.45, jumps: 0.0,
             even: 0.0, level: 1.0, consonant: None, consonant_db: 0.0, formants_from: None, formants_to: None, voice_bar: false,
+            closure: 0.0,
         }
     }
 
@@ -555,6 +558,7 @@ fn push_stop(
     let release = if onset { 0.0 } else { CODA_RELEASE.0 };
     let mut b = consonant_call(cons, t, scale, pitch, vowel, onset);
     b.dur = burst * k;
+    b.closure = closure;
     b.consonant_db = burst_db + release;
     t += b.dur;
     calls.push(b);

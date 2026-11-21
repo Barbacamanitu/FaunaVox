@@ -15,6 +15,7 @@ pub mod field;
 pub mod genome;
 pub mod ffi;
 pub mod model;
+pub mod mouth;
 pub mod presets;
 pub mod rng;
 pub mod space;
@@ -22,4 +23,5 @@ pub mod synth;
 
 pub use english::english_to_phrase;
 pub use model::{Body, Creature, Source, VowelSpec, Voice};
+pub use mouth::{mouth_track, MouthTrack};
 pub use synth::{create_vocalization, INTENT_NAMES, SR};

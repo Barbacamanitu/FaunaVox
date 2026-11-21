@@ -11,7 +11,7 @@ use faunavox::model::Source;
 use faunavox::rng::Rng;
 use faunavox::space::{self, BodyInput, AXES};
 
-use super::{write_wav, Format};
+use super::{write_mouth, write_wav, Format};
 
 pub const HELP: &str = "\
 cvsynth genome - decode a creature's voice from its DNA, and render it
@@ -38,6 +38,7 @@ OPTIONS:
     --out-dir DIR    render WAVs here, with each creature's DNA, JSON and decoder report
     --no-field       decode without the preference field (no steering)
     --json           print the decoded creature JSON
+    --mouth FPS      also write each call's mouth movement to NAME_INTENT.mouth.json
     --lineage LIST   also decode descendants at these generations (e.g. 1,5,20): each generation
                      mutated as Unity does (Genome.MutateSection, MutationRates.Default)
     --rate X         scale those mutation rates (default 1)
@@ -60,6 +61,7 @@ struct Args {
     out_dir: Option<PathBuf>,
     field: bool,
     json: bool,
+    mouth: Option<f64>,
     count: Option<usize>,
     lineage: Vec<usize>,
     rate: f64,
@@ -67,7 +69,7 @@ struct Args {
 
 fn parse(args: &[String]) -> Result<Args, String> {
     let mut a = Args {
-        body: None, dna: None, random: 0, seed: 1, intents: "all".into(), out_dir: None, field: true, json: false,
+        body: None, dna: None, random: 0, seed: 1, intents: "all".into(), out_dir: None, field: true, json: false, mouth: None,
         count: None, lineage: vec![], rate: 1.0,
     };
     let mut b = BodyInput { mass: 12.0, ..BodyInput::default() };
@@ -126,6 +128,7 @@ fn parse(args: &[String]) -> Result<Args, String> {
             "--out-dir" | "--out" => a.out_dir = Some(PathBuf::from(val("--out-dir")?)),
             "--no-field" => a.field = false,
             "--json" => a.json = true,
+            "--mouth" => a.mouth = Some(val("--mouth")?.parse().map_err(|_| "--mouth must be frames per second")?),
             "--lineage" => {
                 a.lineage = val("--lineage")?
                     .split(',')
@@ -213,6 +216,9 @@ pub fn genome(args: &[String]) -> Result<(), String> {
             let audio = create_vocalization(&c.body, &c.voice, &intent, a.seed, 10.0, 0.4)?;
             let path = dir.join(format!("{name}_{intent}.wav"));
             write_wav(&path, &audio, Format::Pcm16).map_err(|e| format!("{}: {e}", path.display()))?;
+            if let Some(fps) = a.mouth {
+                write_mouth(&path, &c.body, &c.voice, &intent, a.seed, fps)?;
+            }
         }
     }
     if let Some(dir) = &a.out_dir {
